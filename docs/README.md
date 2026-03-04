@@ -39,13 +39,15 @@ Cada camada possui responsabilidade bem definida:
 # 📂 Estrutura do Projeto
 
 ```
-FullstackIntegrador
+bip-teste-integrado
 │
 ├── db
 │   ├── schema.sql
 │   └── seed.sql
 │
 ├── ejb-module
+│   ├── src
+│   └── pom.xml
 │
 ├── backend-module
 │
@@ -162,7 +164,78 @@ Resultado esperado:
 | 1  | Beneficio A | 1000  |
 | 2  | Beneficio B | 500   |
 
-Se os dados forem retornados corretamente, o banco foi configurado com sucesso.
+---
+
+# 🐞 Sprint 1 — Correção do Bug no EJB
+
+O módulo EJB continha um bug crítico no método de transferência de benefícios:
+
+```
+BeneficioEjbService.transfer(...)
+```
+
+A implementação original:
+
+* não validava parâmetros
+* permitia saldo negativo
+* não tratava concorrência
+* podia gerar **lost updates**
+
+---
+
+## 🔧 Melhorias implementadas
+
+Foram adicionadas validações e controle transacional para garantir consistência de dados.
+
+### Validações implementadas
+
+* `fromId` e `toId` obrigatórios
+* `amount` obrigatório
+* valor da transferência deve ser maior que zero
+* transferência para o mesmo benefício não é permitida
+* validação de saldo suficiente
+
+---
+
+### Controle de concorrência
+
+Foi implementado **Pessimistic Locking** utilizando:
+
+```
+LockModeType.PESSIMISTIC_WRITE
+```
+
+Isso garante que duas transações não modifiquem o mesmo registro simultaneamente.
+
+Além disso, foi aplicada uma estratégia para **evitar deadlocks**, realizando o lock sempre na mesma ordem de IDs.
+
+---
+
+### Garantia de rollback
+
+Em caso de erro (saldo insuficiente, benefício inexistente, etc.), são lançadas exceções que causam **rollback automático da transação** no container EJB.
+
+---
+
+## ✔️ Build do módulo EJB
+
+O módulo foi compilado utilizando Maven:
+
+```
+mvn -f ejb-module/pom.xml clean package
+```
+
+Resultado:
+
+```
+BUILD SUCCESS
+```
+
+Gerando o artefato:
+
+```
+ejb-module/target/ejb-module-1.0.0.jar
+```
 
 ---
 
@@ -171,8 +244,8 @@ Se os dados forem retornados corretamente, o banco foi configurado com sucesso.
 | Sprint   | Descrição                     | Status         |
 | -------- | ----------------------------- | -------------- |
 | Sprint 0 | Setup do banco de dados       | ✅ Concluído    |
-| Sprint 1 | Correção do bug no EJB        | ⏳ Em andamento |
-| Sprint 2 | Backend CRUD + Integração EJB | ⏳ Pendente     |
+| Sprint 1 | Correção do bug no EJB        | ✅ Concluído    |
+| Sprint 2 | Backend CRUD + Integração EJB | ⏳ Em andamento |
 | Sprint 3 | Frontend Angular              | ⏳ Pendente     |
 | Sprint 4 | Testes                        | ⏳ Pendente     |
 | Sprint 5 | Documentação final            | ⏳ Pendente     |
@@ -184,4 +257,8 @@ Se os dados forem retornados corretamente, o banco foi configurado com sucesso.
 Lucas Washington Menezes Guiron
 Desenvolvedor Fullstack
 
-Stack principal: **Java | Spring Boot | Angular | Node | React**
+Stack principal:
+
+```
+Java • Spring Boot • Angular • Node • React
+```
