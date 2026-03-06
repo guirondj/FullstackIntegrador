@@ -1,3 +1,4 @@
+
 # 🏗️ Fullstack Integrador
 
 Projeto desenvolvido como parte de um desafio técnico para implementação de uma aplicação **Fullstack em arquitetura multicamadas**, envolvendo:
@@ -15,48 +16,44 @@ O objetivo é construir uma aplicação funcional que permita gerenciamento e tr
 
 A solução segue uma arquitetura em camadas:
 
-```
-Frontend (Angular)
-⬇
-Backend API (Spring Boot)
-⬇
-EJB Module (Regras de Negócio / Transações)
-⬇
+Frontend (Angular)  
+⬇  
+Backend API (Spring Boot)  
+⬇  
+EJB Module (Regras de Negócio / Transações)  
+⬇  
 Banco de Dados (PostgreSQL)
-```
 
 Cada camada possui responsabilidade bem definida:
 
-| Camada         | Responsabilidade                          |
-| -------------- | ----------------------------------------- |
-| Frontend       | Interface de usuário                      |
-| Backend        | API REST e integração                     |
-| EJB            | Regras de negócio e controle transacional |
-| Banco de dados | Persistência                              |
+| Camada | Responsabilidade |
+|------|----------------|
+| Frontend | Interface de usuário |
+| Backend | API REST e integração |
+| EJB | Regras de negócio e controle transacional |
+| Banco de dados | Persistência |
 
 ---
 
 # 📂 Estrutura do Projeto
 
-```
 bip-teste-integrado
+
+├── db  
+│   ├── schema.sql  
+│   └── seed.sql  
 │
-├── db
-│   ├── schema.sql
-│   └── seed.sql
+├── ejb-module  
+│   ├── src  
+│   └── pom.xml  
 │
-├── ejb-module
-│   ├── src
-│   └── pom.xml
+├── backend-module  
 │
-├── backend-module
+├── frontend  
 │
-├── frontend
+├── docs  
 │
-├── docs
-│
-└── docker-compose.yml
-```
+└── docker-compose.yml  
 
 ---
 
@@ -77,188 +74,208 @@ Nesta etapa foi configurado o ambiente de banco de dados utilizando **Docker** e
 
 Na raiz do projeto execute:
 
-```bash
 docker compose up -d
-```
 
 Este comando inicia os seguintes containers:
 
-| Serviço    | Porta | Descrição                           |
-| ---------- | ----- | ----------------------------------- |
-| PostgreSQL | 5442  | Banco de dados da aplicação         |
-| pgAdmin    | 5050  | Interface de administração do banco |
+| Serviço | Porta | Descrição |
+|------|------|-----------|
+| PostgreSQL | 5442 | Banco de dados da aplicação |
+| pgAdmin | 5050 | Interface de administração do banco |
 
 ---
 
 # 🌐 Acessando o pgAdmin
 
-Abra no navegador:
-
-```
 http://localhost:5050
-```
 
 Credenciais:
 
-```
-Email: admin@admin.com
+Email: admin@admin.com  
 Senha: admin
-```
 
 ---
 
 # 🔌 Conectando ao banco
 
-Criar um novo servidor no pgAdmin com os seguintes dados:
-
-| Campo    | Valor      |
-| -------- | ---------- |
-| Host     | postgres   |
-| Port     | 5432       |
+| Campo | Valor |
+|------|------|
+| Host | postgres |
+| Port | 5432 |
 | Database | beneficios |
-| User     | admin      |
-| Password | admin      |
+| User | admin |
+| Password | admin |
 
 ---
 
-# 🗄️ Executando os scripts do banco
+# 🗄️ Executando os scripts
 
-Após conectar ao banco, executar os scripts presentes na pasta `db`.
+1️⃣ Criar estrutura do banco
 
-### 1️⃣ Criar estrutura do banco
-
-Executar:
-
-```
 db/schema.sql
-```
 
-Este script cria a estrutura da tabela **beneficio**.
+2️⃣ Inserir dados iniciais
 
----
-
-### 2️⃣ Inserir dados iniciais
-
-Executar:
-
-```
 db/seed.sql
-```
 
-Este script insere dados iniciais para teste da aplicação.
+Consulta de validação:
 
----
-
-# ✔️ Validação
-
-Após executar os scripts, rodar a seguinte consulta:
-
-```sql
 SELECT * FROM beneficio;
-```
-
-Resultado esperado:
-
-| id | nome        | valor |
-| -- | ----------- | ----- |
-| 1  | Beneficio A | 1000  |
-| 2  | Beneficio B | 500   |
 
 ---
 
 # 🐞 Sprint 1 — Correção do Bug no EJB
 
-O módulo EJB continha um bug crítico no método de transferência de benefícios:
+O módulo EJB continha um bug crítico no método de transferência de benefícios.
 
-```
 BeneficioEjbService.transfer(...)
-```
 
-A implementação original:
+Problemas existentes:
 
-* não validava parâmetros
-* permitia saldo negativo
-* não tratava concorrência
-* podia gerar **lost updates**
+* ausência de validações
+* possibilidade de saldo negativo
+* ausência de controle de concorrência
+* risco de lost update
 
----
+## Melhorias implementadas
 
-## 🔧 Melhorias implementadas
+Validações:
 
-Foram adicionadas validações e controle transacional para garantir consistência de dados.
-
-### Validações implementadas
-
-* `fromId` e `toId` obrigatórios
-* `amount` obrigatório
-* valor da transferência deve ser maior que zero
-* transferência para o mesmo benefício não é permitida
-* validação de saldo suficiente
-
----
+* fromId obrigatório
+* toId obrigatório
+* amount obrigatório
+* valor maior que zero
+* transferência para mesmo benefício bloqueada
+* verificação de saldo suficiente
 
 ### Controle de concorrência
 
-Foi implementado **Pessimistic Locking** utilizando:
+Utilizado:
 
-```
 LockModeType.PESSIMISTIC_WRITE
-```
 
-Isso garante que duas transações não modifiquem o mesmo registro simultaneamente.
+Garantindo que duas transações não alterem o mesmo registro simultaneamente.
 
-Além disso, foi aplicada uma estratégia para **evitar deadlocks**, realizando o lock sempre na mesma ordem de IDs.
+Também foi aplicada ordenação de IDs para evitar deadlocks.
 
----
+### Rollback automático
 
-### Garantia de rollback
+Exceções geradas durante a operação provocam rollback automático da transação EJB.
 
-Em caso de erro (saldo insuficiente, benefício inexistente, etc.), são lançadas exceções que causam **rollback automático da transação** no container EJB.
+Build do módulo:
 
----
-
-## ✔️ Build do módulo EJB
-
-O módulo foi compilado utilizando Maven:
-
-```
 mvn -f ejb-module/pom.xml clean package
-```
 
-Resultado:
+---
 
-```
-BUILD SUCCESS
-```
+# ⚙️ Sprint 2 — Backend REST API
 
-Gerando o artefato:
+Nesta sprint foi desenvolvido o backend utilizando **Spring Boot**, responsável por expor uma API REST para gerenciamento dos benefícios.
 
-```
-ejb-module/target/ejb-module-1.0.0.jar
-```
+## Tecnologias
+
+* Java 17
+* Spring Boot
+* Spring Data JPA
+* PostgreSQL
+* Maven
+
+## Estrutura do módulo backend
+
+backend-module
+
+src/main/java/com/example/backend
+
+model/Beneficio.java  
+repository/BeneficioRepository.java  
+dto/TransferRequest.java  
+BeneficioController.java  
+BackendApplication.java  
+
+---
+
+# 🌐 Endpoints da API
+
+Base URL:
+
+http://localhost:8080/api/v1/beneficios
+
+### Listar benefícios
+
+GET /api/v1/beneficios
+
+### Buscar por ID
+
+GET /api/v1/beneficios/{id}
+
+### Criar benefício
+
+POST /api/v1/beneficios
+
+Exemplo:
+
+{
+ "nome": "Beneficio C",
+ "descricao": "Descrição C",
+ "valor": 250.00,
+ "ativo": true
+}
+
+### Atualizar benefício
+
+PUT /api/v1/beneficios/{id}
+
+### Deletar benefício
+
+DELETE /api/v1/beneficios/{id}
+
+---
+
+# 💸 Endpoint de Transferência
+
+POST /api/v1/beneficios/transfer
+
+Exemplo:
+
+{
+ "fromId": 1,
+ "toId": 2,
+ "amount": 100.00
+}
+
+Nesta etapa o endpoint recebe e valida a requisição.  
+A lógica de transferência será integrada ao módulo EJB na próxima sprint.
+
+---
+
+# 🧪 Testes
+
+Endpoints testados via **Postman**:
+
+1. Criar benefício
+2. Listar benefícios
+3. Buscar por ID
+4. Atualizar benefício
+5. Deletar benefício
+6. Testar requisição de transferência
 
 ---
 
 # 📊 Status do Projeto
 
-| Sprint   | Descrição                     | Status         |
-| -------- | ----------------------------- | -------------- |
-| Sprint 0 | Setup do banco de dados       | ✅ Concluído    |
-| Sprint 1 | Correção do bug no EJB        | ✅ Concluído    |
-| Sprint 2 | Backend CRUD + Integração EJB | ⏳ Em andamento |
-| Sprint 3 | Frontend Angular              | ⏳ Pendente     |
-| Sprint 4 | Testes                        | ⏳ Pendente     |
-| Sprint 5 | Documentação final            | ⏳ Pendente     |
+| Sprint | Descrição | Status |
+|------|-----------|--------|
+| Sprint 0 | Setup do banco | ✅ Concluído |
+| Sprint 1 | Correção bug EJB | ✅ Concluído |
+| Sprint 2 | Backend CRUD + API | ✅ Concluído |
+| Sprint 3 | Integração Backend + EJB | ⏳ Próxima |
+| Sprint 4 | Frontend Angular | ⏳ Pendente |
+| Sprint 5 | Testes e documentação | ⏳ Pendente |
 
 ---
 
 # 👨‍💻 Autor
 
 Lucas Washington Menezes Guiron
+
 Desenvolvedor Fullstack
-
-Stack principal:
-
-```
-Java • Spring Boot • Angular • Node • React
-```

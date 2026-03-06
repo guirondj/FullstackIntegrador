@@ -37,6 +37,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- PostgreSQL (banco do Docker) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Testes -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
