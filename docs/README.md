@@ -14,6 +14,7 @@ A aplicação permite **gerenciamento de benefícios e transferência de valores
 - transações
 - controle de concorrência
 - integração backend / serviços
+- persistência de dados
 
 ---
 
@@ -21,17 +22,26 @@ A aplicação permite **gerenciamento de benefícios e transferência de valores
 
 A solução segue o padrão **Layered Architecture**.
 
-Frontend (Angular)
-│
-▼
-Backend API (Spring Boot)
-│
-▼
-EJB Module (Regras de negócio / Transações)
-│
-▼
-PostgreSQL Database
-
+            +-------------------+
+            |   Angular Frontend |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            | Spring Boot API   |
+            | (backend-module)  |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            |  EJB Module       |
+            | Business Rules    |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            |  PostgreSQL DB    |
+            +-------------------+
 
 Cada camada possui responsabilidade específica:
 
@@ -70,7 +80,7 @@ bip-teste-integrado
 
 # 🧰 Tecnologias Utilizadas
 
-### Backend
+## Backend
 
 - Java 17
 - Spring Boot
@@ -78,13 +88,14 @@ bip-teste-integrado
 - Jakarta EE (EJB)
 - Maven
 
-### Infraestrutura
+## Infraestrutura
 
 - PostgreSQL
 - Docker
 - Docker Compose
+- WildFly
 
-### Ferramentas
+## Ferramentas
 
 - Postman
 - pgAdmin
@@ -102,16 +113,18 @@ Na raiz do projeto execute:
 
 docker compose up -d
 
-Este comando inicia os seguintes containers:
+Isso irá iniciar os containers:
 
 | Serviço | Porta | Descrição |
 |------|------|-----------|
-| PostgreSQL | 5442 | Banco de dados da aplicação |
-| pgAdmin | 5050 | Interface de administração do banco |
+| PostgreSQL | 5442 | Banco de dados |
+| pgAdmin | 5050 | Interface de administração |
+| WildFly | 8080 | Servidor de aplicação |
 
 ---
 
-## 2️⃣ Acessar o pgAdmin
+## 2️⃣ Acessar pgAdmin
+
 
 http://localhost:5050
 
@@ -136,7 +149,7 @@ Senha: admin
 
 ## 4️⃣ Executar scripts SQL
 
-### Executar na ordem:
+Executar na ordem:
 
 Criar estrutura do banco
 
@@ -172,7 +185,7 @@ Problemas identificados:
 
 * concorrência não controlada
 
-* risco de lost update
+* risco de **lost update**
 
 ---
 
@@ -180,11 +193,11 @@ Problemas identificados:
 
 Validações adicionadas:
 
-* fromId obrigatório
+* `fromId` obrigatório
 
-* toId obrigatório
+* `toId` obrigatório
 
-* amount obrigatório
+* `amount` obrigatório
 
 * valor maior que zero
 
@@ -196,29 +209,29 @@ Validações adicionadas:
 
 ## 🔒 Controle de concorrência
 
-Foi utilizado Pessimistic Locking:
+Foi utilizado **Pessimistic Locking**:
 
 LockModeType.PESSIMISTIC_WRITE
 
 Isso garante que duas transações não alterem o mesmo registro simultaneamente.
 
-Também foi aplicada ordenação de IDs para evitar deadlocks.
+Também foi aplicada **ordenação de IDs** para evitar deadlocks.
 
 ---
 
 ## 🔁 Rollback automático
 
-Em caso de erro (saldo insuficiente, benefício inexistente etc.), exceções são lançadas e o container EJB realiza rollback automático da transação.
+Em caso de erro (saldo insuficiente, benefício inexistente etc.), exceções são lançadas e o container EJB realiza **rollback automático da transação**.
 
 ---
 
 # ⚙️ Sprint 2 — Backend REST API
 
-Foi implementada uma API REST utilizando Spring Boot para gerenciamento de benefícios.
+Foi implementada uma API REST utilizando **Spring Boot** para gerenciamento de benefícios.
 
 ---
 
-## Estrutura
+Estrutura:
 
 backend-module
 │
@@ -240,68 +253,63 @@ backend-module
 
 ---
 
-## 🌐 Endpoints da API
+# 🔗 Sprint 3 — Integração Backend + EJB
 
-### Base URL:
+Nesta etapa foi realizada a **integração entre o backend Spring Boot e o módulo EJB**.
+
+A API agora delega a lógica de transferência para o serviço EJB responsável pelas regras de negócio e controle transacional.
+
+Comunicação realizada via **JNDI Lookup**.
+
+---
+
+# 🌐 API Endpoints
+
+Base URL:
 
 http://localhost:8080/api/v1/beneficios
 
-### Listar benefícios : 
+---
 
-GET /api/v1/beneficios
+## Benefícios
 
-### Buscar por ID:
-
-GET /api/v1/beneficios/{id}
-
-###  Criar benefício:
-
-POST /api/v1/beneficios
-
-#### Exemplo:
-
-{
-  "nome": "Beneficio C",
-  "descricao": "Descrição C",
-  "valor": 250.00,
-  "ativo": true
-}
+| Método | Endpoint | Descrição |
+|------|------|------|
+| GET | /beneficios | Listar benefícios |
+| GET | /beneficios/{id} | Buscar por ID |
+| POST | /beneficios | Criar benefício |
+| PUT | /beneficios/{id} | Atualizar benefício |
+| DELETE | /beneficios/{id} | Remover benefício |
 
 ---
 
-### Atualizar benefício:
+## 💸 Transferência
 
-PUT /api/v1/beneficios/{id}
+Endpoint responsável por transferir valores entre benefícios.
 
----
+POST /beneficios/transfer
 
-### Remover benefício:
 
-DELETE /api/v1/beneficios/{id}
+Exemplo de request:
 
----
-
-# 💸 Endpoint de Transferência
-
----
-
-POST /api/v1/beneficios/transfer
-
-#### Exemplo:
-
----
-
+```json
 {
   "fromId": 1,
   "toId": 2,
   "amount": 100.00
 }
 
----
+Fluxo executado:
 
-Nesta fase o endpoint recebe e valida a requisição.
+1. Backend recebe requisição
 
-A lógica completa de transferência será conectada ao EJB Module na próxima etapa.
+2. Valida dados
+
+3. Invoca serviço EJB
+
+4. EJB executa regras de negócio
+
+4. Transação aplicada no banco
 
 ---
 
@@ -309,9 +317,7 @@ A lógica completa de transferência será conectada ao EJB Module na próxima e
 
 Os endpoints foram testados utilizando Postman.
 
----
-
-## Fluxo validado:
+Fluxo validado:
 
 1. Criar benefício
 
@@ -336,7 +342,7 @@ Os endpoints foram testados utilizando Postman.
 | Sprint 0 |Setup do banco|✅ |
 | Sprint 1 |Correção bug EJB |✅ |
 | Sprint 2 | Backend CRUD |✅
-| Sprint 3 | Integração Backend + EJB | ⏳ |
+| Sprint 3 | Integração Backend + EJB | ✅ |
 | Sprint 4 | Frontend Angular| ⏳ |
 | Sprint 5 | Testes | ⏳ |
 | Sprint 6 | Documentação final | ⏳ |
