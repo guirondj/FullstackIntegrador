@@ -365,18 +365,17 @@ Fluxo executado:
 
 # 🧪 Testes
 
-Testes realizados com:
+Foi implementado teste automatizado básico do controller utilizando:
 
-- Postman
-- Interface Angular
+* JUnit
 
-Fluxos validados:
+* Spring Boot Test
 
-1. Listar benefícios  
-2. Criar benefício  
-3. Atualizar benefício  
-4. Deletar benefício  
-5. Transferência entre benefícios  
+* MockMvc
+
+Fluxos testados:
+
+* endpoint de listagem de benefícios  
 
 ---
 
@@ -389,8 +388,8 @@ Fluxos validados:
 | Sprint 2 | Backend CRUD | ✅ |
 | Sprint 3 | Integração Backend + EJB | ✅ |
 | Sprint 4 | Frontend Angular | ✅ |
-| Sprint 5 | Testes automatizados | ⏳ |
-| Sprint 6 | Documentação final | ⏳ |
+| Sprint 5 | Testes automatizados | ✅ |
+| Sprint 6 | Documentação final | ✅ |
 
 ---
 
