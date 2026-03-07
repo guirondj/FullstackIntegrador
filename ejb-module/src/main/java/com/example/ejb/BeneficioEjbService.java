@@ -1,15 +1,16 @@
 package com.example.ejb;
 
-import jakarta.persistence.LockModeType;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.LockModeType;
+
 import java.math.BigDecimal;
 
 @Stateless
-public class BeneficioEjbService {
+public class BeneficioEjbService implements BeneficioEjbServiceRemote {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "beneficiosPU")
     private EntityManager em;
 
     public void transfer(Long fromId, Long toId, BigDecimal amount) {

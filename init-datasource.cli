@@ -1,0 +1,23 @@
+embed-server --std-out=echo
+
+module add --name=org.postgresql \
+  --resources=/opt/jboss/wildfly/postgresql.jar \
+  --dependencies=java.base,java.sql
+
+/subsystem=datasources/jdbc-driver=postgresql:add( \
+  driver-name=postgresql, \
+  driver-module-name=org.postgresql, \
+  driver-class-name=org.postgresql.Driver)
+
+/subsystem=datasources/data-source=BeneficiosDS:add( \
+  jndi-name=java:jboss/datasources/BeneficiosDS, \
+  driver-name=postgresql, \
+  connection-url=jdbc:postgresql://postgres:5432/beneficios, \
+  user-name=admin, \
+  password=admin, \
+  enabled=true, \
+  use-ccm=false, \
+  min-pool-size=1, \
+  max-pool-size=10)
+
+stop-embedded-server

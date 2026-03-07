@@ -25,5 +25,17 @@ services:
     ports:
       - "5050:80"
 
+  wildfly:
+    build:
+      context: .
+      dockerfile: Dockerfile.wildfly
+    container_name: fullstack-wildfly
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+
 volumes:
   postgres_data:

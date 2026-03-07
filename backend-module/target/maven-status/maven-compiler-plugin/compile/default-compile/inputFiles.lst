@@ -1,0 +1,7 @@
+/workspace/backend-module/src/main/java/com/example/backend/service/TransferService.java
+/workspace/backend-module/src/main/java/com/example/backend/BeneficioController.java
+/workspace/backend-module/src/main/java/com/example/backend/model/Beneficio.java
+/workspace/backend-module/src/main/java/com/example/backend/BackendApplication.java
+/workspace/backend-module/src/main/java/com/example/backend/config/EjbLookupConfig.java
+/workspace/backend-module/src/main/java/com/example/backend/dto/TransferRequest.java
+/workspace/backend-module/src/main/java/com/example/backend/repository/BeneficioRepository.java

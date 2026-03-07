@@ -1,2 +1,3 @@
 /workspace/ejb-module/src/main/java/com/example/ejb/Beneficio.java
 /workspace/ejb-module/src/main/java/com/example/ejb/BeneficioEjbService.java
+/workspace/ejb-module/src/main/java/com/example/ejb/BeneficioEjbServiceRemote.java

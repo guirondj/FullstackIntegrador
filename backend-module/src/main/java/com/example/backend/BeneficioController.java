@@ -8,6 +8,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.backend.dto.TransferRequest;
 import org.springframework.http.ResponseEntity;
+import com.example.backend.service.TransferService;
 
 import java.util.List;
 
@@ -16,9 +17,12 @@ import java.util.List;
 public class BeneficioController {
 
     private final BeneficioRepository repository;
+    private final TransferService transferService;
 
-    public BeneficioController(BeneficioRepository repository) {
+    public BeneficioController(BeneficioRepository repository,
+                               TransferService transferService) {
         this.repository = repository;
+        this.transferService = transferService;
     }
 
     @GetMapping
@@ -65,10 +69,13 @@ public class BeneficioController {
 
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(@RequestBody TransferRequest request) {
-        return ResponseEntity.ok(
-                "Transfer request recebida: fromId=" + request.getFromId()
-                        + ", toId=" + request.getToId()
-                        + ", amount=" + request.getAmount()
+
+        transferService.transfer(
+                request.getFromId(),
+                request.getToId(),
+                request.getAmount()
         );
+
+        return ResponseEntity.ok("Transferência realizada com sucesso");
     }
 }
