@@ -255,13 +255,62 @@ backend-module
 
 # 🔗 Sprint 3 — Integração Backend + EJB
 
-Nesta etapa foi realizada a **integração entre o backend Spring Boot e o módulo EJB**.
+Nesta etapa foi realizada a integração entre:
 
-A API agora delega a lógica de transferência para o serviço EJB responsável pelas regras de negócio e controle transacional.
+- **Spring Boot**
+- **EJB Module**
+
+A lógica de transferência passou a ser executada dentro do **EJB Service**, garantindo:
+
+- controle transacional
+- controle de concorrência
+- rollback automático
 
 Comunicação realizada via **JNDI Lookup**.
 
 ---
+
+# 💻 Sprint 4 — Frontend Angular
+
+Foi implementada uma interface simples em **Angular** para interação com a API.
+
+Funcionalidades disponíveis:
+
+- listagem de benefícios
+- formulário de transferência
+- atualização automática dos valores
+- mensagens de sucesso e erro
+
+Interface executando em:
+
+http://localhost:4200
+
+
+Fluxo completo:
+
+            +-------------------+
+            |   Angular Frontend |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            | Spring Boot API   |
+            | (backend-module)  |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            |  EJB Module       |
+            | Business Rules    |
+            +-------------------+
+                     │
+                     ▼
+            +-------------------+
+            |  PostgreSQL DB    |
+            +-------------------+
+
+---
+
 
 # 🌐 API Endpoints
 
@@ -316,51 +365,43 @@ Fluxo executado:
 
 # 🧪 Testes
 
-Os endpoints foram testados utilizando Postman.
+Testes realizados com:
 
-Fluxo validado:
+- Postman
+- Interface Angular
 
-1. Criar benefício
+Fluxos validados:
 
-2. Listar benefícios
-
-3. Buscar por ID
-
-4. Atualizar benefício
-
-5. Deletar benefício
-
-6. Enviar requisição de transferência
+1. Listar benefícios  
+2. Criar benefício  
+3. Atualizar benefício  
+4. Deletar benefício  
+5. Transferência entre benefícios  
 
 ---
 
 # 📊 Roadmap do Projeto
 
----
-
-|Sprint | Descrição| Status|
+| Sprint | Descrição | Status |
 |------|------|------|
-| Sprint 0 |Setup do banco|✅ |
-| Sprint 1 |Correção bug EJB |✅ |
-| Sprint 2 | Backend CRUD |✅
+| Sprint 0 | Setup banco | ✅ |
+| Sprint 1 | Correção bug EJB | ✅ |
+| Sprint 2 | Backend CRUD | ✅ |
 | Sprint 3 | Integração Backend + EJB | ✅ |
-| Sprint 4 | Frontend Angular| ⏳ |
-| Sprint 5 | Testes | ⏳ |
+| Sprint 4 | Frontend Angular | ✅ |
+| Sprint 5 | Testes automatizados | ⏳ |
 | Sprint 6 | Documentação final | ⏳ |
 
 ---
 
 # 👨‍💻 Autor
 
-----
+Lucas Washington Menezes Guiron  
 
-Lucas Washington Menezes Guiron
+Fullstack Developer
 
-Desenvolvedor Fullstack
-
-Stack principal: 
+Stack principal:
 
 Java • Spring Boot • Angular • Node • React
-
 
 ---

@@ -13,6 +13,7 @@ import com.example.backend.service.TransferService;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/api/v1/beneficios")
 public class BeneficioController {
 

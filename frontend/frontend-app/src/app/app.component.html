@@ -1,0 +1,42 @@
+<div class="container">
+  <h1>Fullstack Integrador</h1>
+
+  <section class="card">
+    <h2>Benefícios</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Ativo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let beneficio of beneficios">
+          <td>{{ beneficio.id }}</td>
+          <td>{{ beneficio.nome }}</td>
+          <td>{{ beneficio.descricao }}</td>
+          <td>{{ beneficio.valor }}</td>
+          <td>{{ beneficio.ativo ? 'Sim' : 'Não' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Transferência</h2>
+
+    <div class="form">
+      <input type="number" [(ngModel)]="fromId" placeholder="From ID">
+      <input type="number" [(ngModel)]="toId" placeholder="To ID">
+      <input type="number" [(ngModel)]="amount" placeholder="Amount">
+      <button (click)="transferir()">Transferir</button>
+    </div>
+
+    <p class="sucesso" *ngIf="mensagem">{{ mensagem }}</p>
+    <p class="erro" *ngIf="erro">{{ erro }}</p>
+  </section>
+</div>
