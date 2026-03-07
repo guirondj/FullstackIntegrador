@@ -1,76 +1,102 @@
-
 # 🏗️ Fullstack Integrador
 
-Projeto desenvolvido como parte de um desafio técnico para implementação de uma aplicação **Fullstack em arquitetura multicamadas**, envolvendo:
+![Java](https://img.shields.io/badge/Java-17-red)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
+![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
+![Maven](https://img.shields.io/badge/Maven-Build-orange)
 
-* Banco de dados
-* Serviços EJB
-* Backend Spring Boot
-* Frontend Angular
+Projeto desenvolvido como parte de um **desafio técnico Fullstack**, com objetivo de implementar uma aplicação em **arquitetura multicamadas** utilizando Java, Spring Boot, EJB e PostgreSQL.
 
-O objetivo é construir uma aplicação funcional que permita gerenciamento e transferência de benefícios, aplicando boas práticas de arquitetura, concorrência e transações.
+A aplicação permite **gerenciamento de benefícios e transferência de valores entre contas**, aplicando boas práticas de:
+
+- arquitetura em camadas
+- transações
+- controle de concorrência
+- integração backend / serviços
 
 ---
 
-# 📐 Arquitetura do Projeto
+# 📐 Arquitetura da Aplicação
 
-A solução segue uma arquitetura em camadas:
+A solução segue o padrão **Layered Architecture**.
 
-Frontend (Angular)  
-⬇  
-Backend API (Spring Boot)  
-⬇  
-EJB Module (Regras de Negócio / Transações)  
-⬇  
-Banco de Dados (PostgreSQL)
+Frontend (Angular)
+│
+▼
+Backend API (Spring Boot)
+│
+▼
+EJB Module (Regras de negócio / Transações)
+│
+▼
+PostgreSQL Database
 
-Cada camada possui responsabilidade bem definida:
+
+Cada camada possui responsabilidade específica:
 
 | Camada | Responsabilidade |
 |------|----------------|
-| Frontend | Interface de usuário |
-| Backend | API REST e integração |
+| Frontend | Interface do usuário |
+| Backend | API REST |
 | EJB | Regras de negócio e controle transacional |
-| Banco de dados | Persistência |
+| Database | Persistência |
 
 ---
 
 # 📂 Estrutura do Projeto
 
 bip-teste-integrado
-
-├── db  
-│   ├── schema.sql  
-│   └── seed.sql  
 │
-├── ejb-module  
-│   ├── src  
-│   └── pom.xml  
+├── db
+│ ├── schema.sql
+│ └── seed.sql
 │
-├── backend-module  
+├── ejb-module
+│ ├── src
+│ └── pom.xml
 │
-├── frontend  
+├── backend-module
+│ ├── src
+│ └── pom.xml
 │
-├── docs  
+├── frontend
 │
-└── docker-compose.yml  
+├── docs
+│
+└── docker-compose.yml
 
 ---
 
-# 🚀 Sprint 0 — Setup do Banco de Dados
+# 🧰 Tecnologias Utilizadas
 
-Nesta etapa foi configurado o ambiente de banco de dados utilizando **Docker** e **PostgreSQL**, permitindo que qualquer desenvolvedor execute o ambiente local com apenas um comando.
+### Backend
 
-## 🧰 Tecnologias utilizadas
+- Java 17
+- Spring Boot
+- Spring Data JPA
+- Jakarta EE (EJB)
+- Maven
 
-* Docker
-* Docker Compose
-* PostgreSQL 15
-* pgAdmin 4
+### Infraestrutura
+
+- PostgreSQL
+- Docker
+- Docker Compose
+
+### Ferramentas
+
+- Postman
+- pgAdmin
+- IntelliJ IDEA
 
 ---
 
-# 🐳 Subindo o banco de dados
+# 🚀 Como Executar o Projeto
+
+---
+
+## 1️⃣ Subindo o banco de dados
 
 Na raiz do projeto execute:
 
@@ -85,7 +111,7 @@ Este comando inicia os seguintes containers:
 
 ---
 
-# 🌐 Acessando o pgAdmin
+## 2️⃣ Acessar o pgAdmin
 
 http://localhost:5050
 
@@ -96,7 +122,7 @@ Senha: admin
 
 ---
 
-# 🔌 Conectando ao banco
+## 3️⃣ Configurar conexão com o banco
 
 | Campo | Valor |
 |------|------|
@@ -108,124 +134,148 @@ Senha: admin
 
 ---
 
-# 🗄️ Executando os scripts
+## 4️⃣ Executar scripts SQL
 
-1️⃣ Criar estrutura do banco
+### Executar na ordem:
+
+Criar estrutura do banco
 
 db/schema.sql
-
-2️⃣ Inserir dados iniciais
-
 db/seed.sql
 
-Consulta de validação:
+---
+
+## 5️⃣ Validar dados
 
 SELECT * FROM beneficio;
+
+Resultado esperado:
+
+| id |	nome |	  valor |
+|------|------|-----------|
+|1 |Beneficio A|1000
+|2 |Beneficio B|500
 
 ---
 
 # 🐞 Sprint 1 — Correção do Bug no EJB
 
-O módulo EJB continha um bug crítico no método de transferência de benefícios.
+O método de transferência possuía falhas críticas:
 
 BeneficioEjbService.transfer(...)
 
-Problemas existentes:
+Problemas identificados:
 
 * ausência de validações
+
 * possibilidade de saldo negativo
-* ausência de controle de concorrência
+
+* concorrência não controlada
+
 * risco de lost update
 
-## Melhorias implementadas
+---
 
-Validações:
+## 🔧 Melhorias implementadas
+
+Validações adicionadas:
 
 * fromId obrigatório
+
 * toId obrigatório
+
 * amount obrigatório
+
 * valor maior que zero
-* transferência para mesmo benefício bloqueada
+
+* transferência para o mesmo benefício bloqueada
+
 * verificação de saldo suficiente
 
-### Controle de concorrência
+---
 
-Utilizado:
+## 🔒 Controle de concorrência
+
+Foi utilizado Pessimistic Locking:
 
 LockModeType.PESSIMISTIC_WRITE
 
-Garantindo que duas transações não alterem o mesmo registro simultaneamente.
+Isso garante que duas transações não alterem o mesmo registro simultaneamente.
 
 Também foi aplicada ordenação de IDs para evitar deadlocks.
 
-### Rollback automático
+---
 
-Exceções geradas durante a operação provocam rollback automático da transação EJB.
+## 🔁 Rollback automático
 
-Build do módulo:
-
-mvn -f ejb-module/pom.xml clean package
+Em caso de erro (saldo insuficiente, benefício inexistente etc.), exceções são lançadas e o container EJB realiza rollback automático da transação.
 
 ---
 
 # ⚙️ Sprint 2 — Backend REST API
 
-Nesta sprint foi desenvolvido o backend utilizando **Spring Boot**, responsável por expor uma API REST para gerenciamento dos benefícios.
-
-## Tecnologias
-
-* Java 17
-* Spring Boot
-* Spring Data JPA
-* PostgreSQL
-* Maven
-
-## Estrutura do módulo backend
-
-backend-module
-
-src/main/java/com/example/backend
-
-model/Beneficio.java  
-repository/BeneficioRepository.java  
-dto/TransferRequest.java  
-BeneficioController.java  
-BackendApplication.java  
+Foi implementada uma API REST utilizando Spring Boot para gerenciamento de benefícios.
 
 ---
 
-# 🌐 Endpoints da API
+## Estrutura
 
-Base URL:
+backend-module
+│
+└── src/main/java/com/example/backend
+│
+├── model
+│   └── Beneficio.java
+│
+├── repository
+│   └── BeneficioRepository.java
+│
+├── dto
+│   └── TransferRequest.java
+│
+├── controller
+│   └── BeneficioController.java
+│
+└── BackendApplication.java
+
+---
+
+## 🌐 Endpoints da API
+
+### Base URL:
 
 http://localhost:8080/api/v1/beneficios
 
-### Listar benefícios
+### Listar benefícios : 
 
 GET /api/v1/beneficios
 
-### Buscar por ID
+### Buscar por ID:
 
 GET /api/v1/beneficios/{id}
 
-### Criar benefício
+###  Criar benefício:
 
 POST /api/v1/beneficios
 
-Exemplo:
+#### Exemplo:
 
 {
- "nome": "Beneficio C",
- "descricao": "Descrição C",
- "valor": 250.00,
- "ativo": true
+  "nome": "Beneficio C",
+  "descricao": "Descrição C",
+  "valor": 250.00,
+  "ativo": true
 }
 
-### Atualizar benefício
+---
+
+### Atualizar benefício:
 
 PUT /api/v1/beneficios/{id}
 
-### Deletar benefício
+---
+
+### Remover benefício:
 
 DELETE /api/v1/beneficios/{id}
 
@@ -233,49 +283,77 @@ DELETE /api/v1/beneficios/{id}
 
 # 💸 Endpoint de Transferência
 
+---
+
 POST /api/v1/beneficios/transfer
 
-Exemplo:
+#### Exemplo:
+
+---
 
 {
- "fromId": 1,
- "toId": 2,
- "amount": 100.00
+  "fromId": 1,
+  "toId": 2,
+  "amount": 100.00
 }
 
-Nesta etapa o endpoint recebe e valida a requisição.  
-A lógica de transferência será integrada ao módulo EJB na próxima sprint.
+---
+
+Nesta fase o endpoint recebe e valida a requisição.
+
+A lógica completa de transferência será conectada ao EJB Module na próxima etapa.
 
 ---
 
 # 🧪 Testes
 
-Endpoints testados via **Postman**:
-
-1. Criar benefício
-2. Listar benefícios
-3. Buscar por ID
-4. Atualizar benefício
-5. Deletar benefício
-6. Testar requisição de transferência
+Os endpoints foram testados utilizando Postman.
 
 ---
 
-# 📊 Status do Projeto
+## Fluxo validado:
 
-| Sprint | Descrição | Status |
-|------|-----------|--------|
-| Sprint 0 | Setup do banco | ✅ Concluído |
-| Sprint 1 | Correção bug EJB | ✅ Concluído |
-| Sprint 2 | Backend CRUD + API | ✅ Concluído |
-| Sprint 3 | Integração Backend + EJB | ⏳ Próxima |
-| Sprint 4 | Frontend Angular | ⏳ Pendente |
-| Sprint 5 | Testes e documentação | ⏳ Pendente |
+1. Criar benefício
+
+2. Listar benefícios
+
+3. Buscar por ID
+
+4. Atualizar benefício
+
+5. Deletar benefício
+
+6. Enviar requisição de transferência
+
+---
+
+# 📊 Roadmap do Projeto
+
+---
+
+|Sprint | Descrição| Status|
+|------|------|------|
+| Sprint 0 |Setup do banco|✅ |
+| Sprint 1 |Correção bug EJB |✅ |
+| Sprint 2 | Backend CRUD |✅
+| Sprint 3 | Integração Backend + EJB | ⏳ |
+| Sprint 4 | Frontend Angular| ⏳ |
+| Sprint 5 | Testes | ⏳ |
+| Sprint 6 | Documentação final | ⏳ |
 
 ---
 
 # 👨‍💻 Autor
 
+----
+
 Lucas Washington Menezes Guiron
 
 Desenvolvedor Fullstack
+
+Stack principal: 
+
+Java • Spring Boot • Angular • Node • React
+
+
+---
